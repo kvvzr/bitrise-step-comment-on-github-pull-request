@@ -10,11 +10,11 @@
 title: |-
   Comment on GitHub Pull Request
 summary: |
-  Comment on [GitHub](https://github.com/) Pull Request
+  Comment on [GitHub](https://github.com) Pull Request or Issue
 description: |
-  You can send a any comment on [GitHub](https://github.com/) Pull Request.
+  You can send a any comment on [GitHub](https://github.com) Pull Request or Issue.
 
-  To setup a **Personal access token** visit: https://github.com/settings/tokens
+  To setup a **GitHub personal access token** visit: https://github.com/settings/tokens
 website: https://github.com/kvvzr/bitrise-step-comment-on-github-pull-request
 source_code_url: https://github.com/kvvzr/bitrise-step-comment-on-github-pull-request
 support_url: https://github.com/kvvzr/bitrise-step-comment-on-github-pull-request/issues
@@ -66,24 +66,23 @@ toolkit:
 
 
 inputs:
-  - example_step_input: Default Value - you can leave this empty if you want to
+  - personal_access_token:
     opts:
-      title: "Example Step Input"
-      summary: Summary. No more than 2-3 sentences.
+      title: "GitHub personal access token"
       description: |
-        Description of this input.
-
-        Can be Markdown formatted text.
-      is_expand: true
+        To setup a **GitHub personal access token** visit: https://github.com/settings/tokens
+        Add repo/repo:status scope to the generated token, to allow to comment on GitHub Pull Request or Issue.
       is_required: true
-      value_options: []
-
-outputs:
-  - EXAMPLE_STEP_OUTPUT:
+      is_sensitive: true
+  - body:
     opts:
-      title: "Example Step Output"
-      summary: Summary. No more than 2-3 sentences.
+      title: "Body"
       description: |
-        Description of this output.
-
-        Can be Markdown formatted text.
+        Text of the message to send.
+      is_required: true
+  - issue_number: "$BITRISE_PULL_REQUEST"
+    opts:
+      title: "GitHub PullRequest or Issue number"
+      description: |
+        Number of GitHub Pull request or Issue.
+      is_required: true
