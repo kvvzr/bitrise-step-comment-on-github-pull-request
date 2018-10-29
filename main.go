@@ -1,31 +1,53 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
-	"os/exec"
+	"strings"
 )
 
-func main() {
-	fmt.Println("This is the value specified for the input 'example_step_input':", os.Getenv("example_step_input"))
+type Payload struct {
+	Body string `json:"body"`
+}
 
-	//
-	// --- Step Outputs: Export Environment Variables for other Steps:
-	// You can export Environment Variables for other Steps with
-	//  envman, which is automatically installed by `bitrise setup`.
-	// A very simple example:
-	cmdLog, err := exec.Command("bitrise", "envman", "add", "--key", "EXAMPLE_STEP_OUTPUT", "--value", "the value you want to share").CombinedOutput()
+func ownerAndRepo(url string) (string, string) {
+	url = strings.TrimPrefix(strings.TrimPrefix(url, "https://"), "git@")
+	paths := strings.FieldsFunc(url, func(r rune) bool { return r == '/' || r == ':' })
+	return paths[1], strings.TrimSuffix(paths[2], ".git")
+}
+
+func main() {
+	authToken := os.Getenv("personal_access_token")
+	message := os.Getenv("body")
+	owner, repo := ownerAndRepo(os.Getenv("repository_url"))
+	issueNumber := os.Getenv("issue_number")
+	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/issues/%s/comments", owner, repo, issueNumber)
+
+	data := Payload{
+		message,
+	}
+	payloadBytes, err := json.Marshal(data)
 	if err != nil {
-		fmt.Printf("Failed to expose output with envman, error: %#v | output: %s", err, cmdLog)
 		os.Exit(1)
 	}
-	// You can find more usage examples on envman's GitHub page
-	//  at: https://github.com/bitrise-io/envman
+	body := bytes.NewReader(payloadBytes)
 
-	//
-	// --- Exit codes:
-	// The exit code of your Step is very important. If you return
-	//  with a 0 exit code `bitrise` will register your Step as "successful".
-	// Any non zero exit code will be registered as "failed" by `bitrise`.
+	req, err := http.NewRequest("POST", url, body)
+	if err != nil {
+		os.Exit(1)
+	}
+	req.SetBasicAuth(authToken, "x-oauth-basic")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		os.Exit(1)
+	}
+	defer resp.Body.Close()
+
 	os.Exit(0)
 }

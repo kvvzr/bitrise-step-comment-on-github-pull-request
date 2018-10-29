@@ -80,6 +80,12 @@ inputs:
       description: |
         Text of the message to send.
       is_required: true
+  - repository_url: "$GIT_REPOSITORY_URL"
+    opts:
+      title: "Repository URL"
+      description: |
+        The URL for target GitHub Repository.
+      is_required: true
   - issue_number: "$BITRISE_PULL_REQUEST"
     opts:
       title: "GitHub PullRequest or Issue number"
