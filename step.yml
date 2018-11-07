@@ -12,7 +12,7 @@ title: |-
 summary: |
   Comment on [GitHub](https://github.com) Pull Request or Issue
 description: |
-  You can send a any comment on [GitHub](https://github.com) Pull Request or Issue.
+  You can send a comment on [GitHub](https://github.com) Pull Request or Issue.
 
   To setup a **GitHub personal access token** visit: https://github.com/settings/tokens
 website: https://github.com/kvvzr/bitrise-step-comment-on-github-pull-request
