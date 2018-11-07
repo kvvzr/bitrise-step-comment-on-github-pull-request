@@ -51,15 +51,6 @@ is_always_run: true
 is_skippable: false
 run_if: ""
 
-deps:
-  brew:
-  - name: git
-  - name: wget
-  apt_get:
-  - name: git
-  - name: wget
-
-
 toolkit:
   go:
     package_name: github.com/kvvzr/bitrise-step-comment-on-github-pull-request
