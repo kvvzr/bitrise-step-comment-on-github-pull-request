@@ -62,7 +62,7 @@ inputs:
       title: "GitHub personal access token"
       description: |
         To setup a **GitHub personal access token** visit: https://github.com/settings/tokens
-        Add repo/repo:status scope to the generated token, to allow to comment on GitHub Pull Request or Issue.
+        Add repo(Full control of private repositories) scope to the generated token, to allow to comment on GitHub Pull Request or Issue.
       is_required: true
       is_sensitive: true
   - body:
