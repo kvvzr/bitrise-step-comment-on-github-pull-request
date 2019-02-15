@@ -83,3 +83,9 @@ inputs:
       description: |
         Number of GitHub Pull request or Issue.
       is_required: true
+  - api_base_url: "https://api.github.com"
+    opts:
+      title: "GitHub API Base URL"
+      description: |-
+        The URL for GitHub or GitHub Enterprise API
+      is_required: true
