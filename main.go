@@ -17,6 +17,7 @@ type Config struct {
 	Body          string `env:"body"`
 	RepositoryURL string `env:"repository_url"`
 	IssueNumber   string `env:"issue_number"`
+	APIBaseURL    string `env:"api_base_url"`
 }
 
 type Payload struct {
@@ -38,7 +39,7 @@ func main() {
 	stepconf.Print(conf)
 
 	owner, repo := ownerAndRepo(conf.RepositoryURL)
-	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/issues/%s/comments", owner, repo, conf.IssueNumber)
+	url := fmt.Sprintf("%s/repos/%s/%s/issues/%s/comments", conf.APIBaseURL, owner, repo, conf.IssueNumber)
 
 	data := Payload{
 		conf.Body,
