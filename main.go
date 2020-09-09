@@ -13,11 +13,11 @@ import (
 )
 
 type Config struct {
-	AuthToken     string `env:"personal_access_token"`
-	Body          string `env:"body"`
-	RepositoryURL string `env:"repository_url"`
-	IssueNumber   string `env:"issue_number"`
-	APIBaseURL    string `env:"api_base_url"`
+	AuthToken     stepconf.Secret `env:"personal_access_token,required"`
+	Body          string `env:"body,required"`
+	RepositoryURL string `env:"repository_url,required"`
+	IssueNumber   string `env:"issue_number,required"`
+	APIBaseURL    string `env:"api_base_url,required"`
 }
 
 type Payload struct {
@@ -56,7 +56,7 @@ func main() {
 		log.Errorf("Error: %s\n", err)
 		os.Exit(1)
 	}
-	req.SetBasicAuth(conf.AuthToken, "x-oauth-basic")
+	req.Header.Set("Authorization", "token " + string(conf.AuthToken))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 
