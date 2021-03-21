@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -25,6 +26,11 @@ func ownerAndRepo(url string) (string, string) {
 	return paths[1], strings.TrimSuffix(paths[2], ".git")
 }
 
+// wraps the tag in some special characters to avoid colliding with random text
+func decoratedTag(tag string) string {
+	return fmt.Sprintf("-- %s --", tag)
+}
+
 func main() {
 	var conf Config
 	if err := stepconf.Parse(&conf); err != nil {
@@ -34,6 +40,7 @@ func main() {
 	stepconf.Print(conf)
 
 	owner, repo := ownerAndRepo(conf.RepositoryURL)
+	commentBody := conf.Body
 
 	github.Initialize(string(conf.AuthToken))
 
@@ -41,7 +48,27 @@ func main() {
 	if err != nil {
 		log.Errorf("Failed to convert IssueNumber %s to string: %w\n", conf.IssueNumber, err)
 	}
-	comment, err := github.CreateComment(owner, repo, issueNumber, conf.Body)
+
+	// if tag is set, try to find and update existing comment
+	if conf.UpdateCommentTag != "" {
+		commentBody = fmt.Sprintf("%s\n\n%s", conf.Body, decoratedTag(conf.UpdateCommentTag))
+		taggedComment, err := github.GetFirstCommentWithTag(owner, repo, issueNumber, decoratedTag(conf.UpdateCommentTag))
+
+		if err == nil { // comment with the given tag found
+			comment, err := github.UpdateComment(owner, repo, *taggedComment.ID, commentBody)
+
+			if err != nil {
+				log.Errorf("Github API call failed when updating comment: %w\n", err)
+			} else {
+				log.Successf("Success: %v\n", comment)
+			}
+
+			os.Exit(0)
+		}
+	}
+
+	// creating a new comment (either no update tag is set or no existing comment with the given tag found)
+	comment, err := github.CreateComment(owner, repo, issueNumber, commentBody)
 	if err != nil {
 		log.Errorf("Github API call failed: %w\n", conf.IssueNumber, err)
 	} else {
