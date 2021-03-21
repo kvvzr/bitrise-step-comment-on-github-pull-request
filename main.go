@@ -1,27 +1,22 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
+	"os"
+	"strconv"
+	"strings"
+
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/bitrise-tools/go-steputils/stepconf"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"strings"
+	"github.com/kvvzr/bitrise-step-comment-on-github-pull-request/github"
 )
 
 type Config struct {
-	AuthToken     stepconf.Secret `env:"personal_access_token,required"`
-	Body          string `env:"body,required"`
-	RepositoryURL string `env:"repository_url,required"`
-	IssueNumber   string `env:"issue_number,required"`
-	APIBaseURL    string `env:"api_base_url,required"`
-}
-
-type Payload struct {
-	Body string `json:"body"`
+	AuthToken        stepconf.Secret `env:"personal_access_token,required"`
+	Body             string          `env:"body,required"`
+	RepositoryURL    string          `env:"repository_url,required"`
+	IssueNumber      string          `env:"issue_number,required"`
+	APIBaseURL       string          `env:"api_base_url,required"`
+	UpdateCommentTag string          `env:"update_comment_tag"`
 }
 
 func ownerAndRepo(url string) (string, string) {
@@ -39,35 +34,19 @@ func main() {
 	stepconf.Print(conf)
 
 	owner, repo := ownerAndRepo(conf.RepositoryURL)
-	url := fmt.Sprintf("%s/repos/%s/%s/issues/%s/comments", conf.APIBaseURL, owner, repo, conf.IssueNumber)
 
-	data := Payload{
-		conf.Body,
-	}
-	payloadBytes, err := json.Marshal(data)
-	if err != nil {
-		log.Errorf("Error: %s\n", err)
-		os.Exit(1)
-	}
-	body := bytes.NewReader(payloadBytes)
+	github.Initialize(string(conf.AuthToken))
 
-	req, err := http.NewRequest("POST", url, body)
+	issueNumber, err := strconv.Atoi(conf.IssueNumber)
 	if err != nil {
-		log.Errorf("Error: %s\n", err)
-		os.Exit(1)
+		log.Errorf("Failed to convert IssueNumber %s to string: %w\n", conf.IssueNumber, err)
 	}
-	req.Header.Set("Authorization", "token " + string(conf.AuthToken))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
+	comment, err := github.CreateComment(owner, repo, issueNumber, conf.Body)
 	if err != nil {
-		log.Errorf("Error: %s\n", err)
-		os.Exit(1)
+		log.Errorf("Github API call failed: %w\n", conf.IssueNumber, err)
+	} else {
+		log.Successf("Success: %v\n", comment)
 	}
-	respBody, _ := ioutil.ReadAll(resp.Body)
-	log.Successf("Success: %s\n", respBody)
-	defer resp.Body.Close()
 
 	os.Exit(0)
 }

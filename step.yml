@@ -12,7 +12,7 @@ title: |-
 summary: |
   Comment on [GitHub](https://github.com) Pull Request or Issue
 description: |
-  You can send a comment on [GitHub](https://github.com) Pull Request or Issue.
+  You can send a new or update an existing comment on [GitHub](https://github.com) Pull Request or Issue.
 
   To setup a **GitHub personal access token** visit: https://github.com/settings/tokens
 website: https://github.com/kvvzr/bitrise-step-comment-on-github-pull-request
@@ -22,27 +22,6 @@ host_os_tags:
   - osx-10.10
   - ubuntu-16.04
 
-# If this step should be available only for certain project types
-# just uncomment this `project_type_tags` section and include all the
-# project types supported by the step. If the step can be used for all
-# project types then you can just remove this section.
-# If no `project_type_tags` specified (or specified as an empty array)
-# that means the step can be used for any project type.
-# You can find more information about project type tags in the Step Development Guideline:
-# https://github.com/bitrise-io/bitrise/blob/master/_docs/step-development-guideline.md
-#
-# project_type_tags:
-#   - ios
-#   - macos
-#   - android
-#   - xamarin
-#   - react-native
-#   - cordova
-#   - ionic
-
-# Type tags are used for categorizing steps, for easier step discovery in Step Libraries.
-# You can find more information about type tags in the Step Development Guideline:
-# https://github.com/bitrise-io/bitrise/blob/master/_docs/step-development-guideline.md
 type_tags:
   - notification
 
@@ -54,7 +33,6 @@ run_if: ""
 toolkit:
   go:
     package_name: github.com/kvvzr/bitrise-step-comment-on-github-pull-request
-
 
 inputs:
   - personal_access_token:
@@ -89,3 +67,12 @@ inputs:
       description: |-
         The URL for GitHub or GitHub Enterprise API
       is_required: true
+  - update_comment_tag: null
+    opts:
+      title: "Update comment tag"
+      description: |
+        If set and a commment with the given tag exists, it updates the comment instead of posting a new one.
+        If no comment with the given tag exists, a new comment is posted.
+        
+        The tag should be a unique string that will be added to end of the comment's content. The step automatically extends the tag to be enclosed in square brackets.
+      is_required: false
