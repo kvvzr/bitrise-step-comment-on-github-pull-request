@@ -25,7 +25,6 @@ func NewClient(accessToken string) *GithubClient {
 		ctx,
 		gogithub.NewClient(tc),
 	}
-
 }
 
 func (c *GithubClient) CreateComment(owner, repo string, issueNumber int, body string) (*gogithub.IssueComment, error) {
