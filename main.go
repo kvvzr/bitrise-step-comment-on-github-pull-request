@@ -41,7 +41,13 @@ func main() {
 	owner, repo := ownerAndRepo(conf.RepositoryURL)
 	commentBody := conf.Body
 
-	githubClient := github.NewClient(string(conf.AuthToken))
+	var githubClient *github.GithubClient
+
+	if conf.APIBaseURL == "" {
+		githubClient = github.NewClient(string(conf.AuthToken))
+	} else {
+		githubClient = github.NewEnterpriseClient(conf.APIBaseURL, string(conf.AuthToken))
+	}
 
 	// if tag is set, try to find and update existing comment
 	if conf.UpdateCommentTag != "" {

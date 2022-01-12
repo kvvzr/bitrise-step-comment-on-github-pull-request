@@ -3,8 +3,11 @@ package github
 import (
 	"context"
 	"errors"
+	"net/http"
+	"os"
 	"strings"
 
+	"github.com/bitrise-io/go-utils/log"
 	gogithub "github.com/google/go-github/v33/github"
 	"golang.org/x/oauth2"
 )
@@ -16,15 +19,35 @@ type GithubClient struct {
 
 func NewClient(accessToken string) *GithubClient {
 	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: accessToken},
-	)
-	tc := oauth2.NewClient(ctx, ts)
+	tc := NewAuthTokenClient(accessToken)
 
 	return &GithubClient{
 		ctx,
 		gogithub.NewClient(tc),
 	}
+}
+
+func NewEnterpriseClient(baseURL string, accessToken string) *GithubClient {
+	ctx := context.Background()
+	tc := NewAuthTokenClient(accessToken)
+	enterpriseClient, err := gogithub.NewEnterpriseClient(baseURL, baseURL, tc)
+	if err != nil {
+		log.Errorf("Error: %s\n", err)
+		os.Exit(1)
+	}
+
+	return &GithubClient{
+		ctx,
+		enterpriseClient,
+	}
+}
+
+func NewAuthTokenClient(accessToken string) *http.Client {
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: accessToken},
+	)
+	return oauth2.NewClient(ctx, ts)
 }
 
 func (c *GithubClient) CreateComment(owner, repo string, issueNumber int, body string) (*gogithub.IssueComment, error) {
