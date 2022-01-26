@@ -27,7 +27,7 @@ func ownerAndRepo(url string) (string, string) {
 
 // wraps the tag in some special characters to avoid colliding with random text
 func decoratedTag(tag string) string {
-	return fmt.Sprintf("-- %s --", tag)
+	return fmt.Sprintf("<!-- %s -->", tag)
 }
 
 func main() {
