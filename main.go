@@ -12,7 +12,8 @@ import (
 
 type Config struct {
 	AuthToken        stepconf.Secret `env:"personal_access_token,required"`
-	Body             string          `env:"body,required"`
+	Body             string          `env:"body"`
+	BodyFile         string          `env:"body_file"`
 	RepositoryURL    string          `env:"repository_url,required"`
 	IssueNumber      int             `env:"issue_number,required"`
 	APIBaseURL       string          `env:"api_base_url,required"`
@@ -38,8 +39,23 @@ func main() {
 	}
 	stepconf.Print(conf)
 
+	if conf.Body == "" && conf.BodyFile == "" {
+	    log.Errorf("Body or BodyFile is required!")
+	    os.Exit(1)
+	}
+
+    rawComment := conf.Body
+    if conf.BodyFile != "" {
+        bytes, err := os.ReadFile(conf.BodyFile)
+        if err != nil {
+            log.Errorf("Error: %s\n", err)
+            os.Exit(1)
+        }
+        rawComment = string(bytes)
+    }
+
 	owner, repo := ownerAndRepo(conf.RepositoryURL)
-	commentBody := conf.Body
+	commentBody := rawComment
 
 	var githubClient *github.GithubClient
 
@@ -51,7 +67,7 @@ func main() {
 
 	// if tag is set, try to find and update existing comment
 	if conf.UpdateCommentTag != "" {
-		commentBody = fmt.Sprintf("%s\n\n%s", conf.Body, decoratedTag(conf.UpdateCommentTag))
+		commentBody = fmt.Sprintf("%s\n\n%s", rawComment, decoratedTag(conf.UpdateCommentTag))
 		taggedComment, err := githubClient.GetFirstCommentWithTag(owner, repo, conf.IssueNumber, decoratedTag(conf.UpdateCommentTag))
 
 		if err == nil { // comment with the given tag found
